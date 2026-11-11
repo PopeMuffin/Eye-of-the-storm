@@ -1,0 +1,33 @@
+## Model 8
+def unet_encoder_block(x, filters):
+    # Two convs to refine the fine structures
+    x = layers.Conv2D(filters, 3, padding='same', activation='relu')(x)
+    x = layers.Conv2D(filters, 3, padding='same', activation='relu')(x)
+    # Save this for a skip connection if you go full U-Net
+    pool = layers.MaxPooling2D((2, 2))(x)
+    return x, pool
+
+inputs = layers.Input(shape=(224, 448, 3))
+
+# Level 1: 64 filters (Captures tiny gland edges)
+f1, p1 = unet_encoder_block(inputs, 64)
+
+# Level 2: 128 filters (Captures gland segments)
+f2, p2 = unet_encoder_block(p1, 128)
+
+# Level 3: 256 filters (Captures regional atrophy)
+f3, p3 = unet_encoder_block(p2, 256)
+
+# Instead of decoding, we "Fuse" these levels for Scoring
+# This is called a "Multi-scale Fusion"
+gap1 = layers.GlobalAveragePooling2D()(f1)
+gap2 = layers.GlobalAveragePooling2D()(f2)
+gap3 = layers.GlobalAveragePooling2D()(f3)
+
+combined = layers.Concatenate()([gap1, gap2, gap3])
+
+x = layers.Dense(512, activation='relu')(combined)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(4, activation='softmax')(x)
+
+model = models.Model(inputs, outputs)

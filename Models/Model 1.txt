@@ -1,0 +1,30 @@
+## Model 1
+# Match your exact image dimensions
+# (Height, Width, Channels)
+input_shape = (224, 448, 3)
+
+model = models.Sequential([
+    # First Convolutional Block
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=input_shape),
+    layers.MaxPooling2D((2, 2)),
+
+    # Second Convolutional Block
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+
+    # Third Convolutional Block
+    layers.Conv2D(128, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),
+
+    # Flatten and Dense layers
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dropout(0.5), # Helps prevent overfitting
+
+    # Output layer: 4 neurons for classes 0, 1, 2, 3
+    layers.Dense(4, activation='softmax')  # original
+    #layers.Dense(3)  # coral method with changed labels from scalar to vector 
+    #layers.Dense(1, activation='sigmoid') # use when we use the meanabsolute error as loss function
+])
+
+model.summary()
