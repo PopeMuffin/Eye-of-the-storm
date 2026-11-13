@@ -131,9 +131,11 @@ def _map_dataset(
 def _upsample_dataset(
     ds: tf.data.Dataset[tuple[tf.Tensor, int]],
 ) -> tf.data.Dataset[tuple[tf.Tensor, int]]:
-    val0_ds = ds.filter(lambda item: item[1] == 0).take(30)
-    val2_ds = ds.filter(lambda item: item[1] == 2).take(40)
-    val3_ds = ds.filter(lambda item: item[1] == 3).repeat(6)
+    # tf.data unpacks (image, label) tuples into two positional args at
+    # runtime regardless of the stub's single-arg predicate type.
+    val0_ds = ds.filter(lambda x, y: y == 0).take(30)  # pyright: ignore[reportArgumentType]
+    val2_ds = ds.filter(lambda x, y: y == 2).take(40)  # pyright: ignore[reportArgumentType]
+    val3_ds = ds.filter(lambda x, y: y == 3).repeat(6)  # pyright: ignore[reportArgumentType]
 
     balanced = ds.concatenate(val0_ds).concatenate(val2_ds).concatenate(val3_ds)
 
@@ -208,3 +210,5 @@ def load_data():
 
     model_val_dataset = val_dataset_cached.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
     model_test_dataset = test_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+
+    return model_train_dataset, model_val_dataset, model_test_dataset

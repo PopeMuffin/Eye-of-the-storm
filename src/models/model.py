@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeAlias
+from typing import TypeAlias, cast
 
 import tensorflow as tf
 
@@ -20,7 +20,7 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
 
 
 class MeiboModel:
-    Model: TypeAlias = tf.keras.Model[tf.Tensor, tf.Tensor]
+    type Model = tf.keras.Model[tf.Tensor, tf.Tensor]
     Dataset: TypeAlias = tf.data.Dataset[tuple[tf.Tensor, int]]
 
     def __init__(self, model: Model) -> None:
@@ -53,3 +53,11 @@ class MeiboModel:
         )
 
         # NOTE: i removed the class weight
+
+    def evaluate(self, test_data: Dataset) -> dict[str, float]:
+        return cast(
+            dict[str, float],
+            cast(object, self.model.evaluate(test_data, return_dict=True)),
+        )
+        
+
