@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TypeAlias, cast
 
+import numpy as np
 import tensorflow as tf
 
 from src.utils.logger import Logger
@@ -21,7 +22,7 @@ reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
 
 class MeiboModel:
     type Model = tf.keras.Model[tf.Tensor, tf.Tensor]
-    Dataset: TypeAlias = tf.data.Dataset[tuple[tf.Tensor, int]]
+    Dataset: TypeAlias = tf.data.Dataset[tuple[tf.Tensor, tf.Tensor]]
 
     def __init__(self, model: Model) -> None:
         self.model: MeiboModel.Model = model
@@ -59,5 +60,19 @@ class MeiboModel:
             dict[str, float],
             cast(object, self.model.evaluate(test_data, return_dict=True)),
         )
-        
+
+    def predict_dataset(
+        self, dataset: Dataset
+    ) -> tuple[list[int], list[int], list[list[float]]]:
+        y_true: list[int] = []
+        y_pred: list[int] = []
+        softmax_values: list[list[float]] = []
+
+        for images, labels in dataset:
+            preds = self.model.predict(images, verbose=0)
+            y_pred.extend(np.argmax(preds, axis=1).tolist())
+            y_true.extend(labels.numpy().tolist())
+            softmax_values.extend(preds.tolist())
+
+        return y_true, y_pred, softmax_values
 

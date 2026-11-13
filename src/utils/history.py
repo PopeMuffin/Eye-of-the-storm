@@ -1,9 +1,13 @@
 import os
+from typing import cast
 
 import matplotlib.pyplot as plt
+import numpy as np
 import tensorflow as tf
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix, precision_score, recall_score
 import seaborn as sns
+
+from src.utils.logger import Logger
 
 OUTPUT_PATH = "out"
 
@@ -61,3 +65,46 @@ def plot_confusion_matrix(y_true: list[int], y_pred: list[int]) -> None:
     plt.ylabel("Actual Grade")
     plt.xlabel("Predicted Grade")
     plt.savefig(os.path.join(OUTPUT_PATH, "confusion_matrix.png"))
+
+
+def log_evaluation(
+    history: tf.keras.callbacks.History,
+    y_true: list[int],
+    y_pred: list[int],
+    results: dict[str, float],
+    batch_size: int,
+    learn_rate: float,
+) -> None:
+    # sklearn's metric functions have no type annotations, so pyright infers
+    # overly narrow parameter/return types from their default values.
+    precisions = cast(
+        "np.ndarray",
+        precision_score(y_true, y_pred, average=None),  # pyright: ignore[reportArgumentType]
+    )
+    recalls = cast(
+        "np.ndarray",
+        recall_score(y_true, y_pred, average=None),  # pyright: ignore[reportArgumentType]
+    )
+    report = cast(str, classification_report(y_true, y_pred))
+
+    unique, counts = np.unique(y_pred, return_counts=True)
+
+    lines = [
+        f"\nbatch_size : {batch_size}",
+        f"l_rate : {learn_rate}",
+        "\nModel Evaluation Results:",
+        f"Test Loss: {results['loss']:.4f}",
+        f"Test Accuracy: {results['accuracy']:.4f}",
+        f"Unique predictions made by model: {unique.tolist()}",
+        f"Frequency of each prediction: {counts.tolist()}",
+    ]
+    for i, (precision, recall) in enumerate(zip(precisions, recalls)):
+        lines.append(f"Class {i}: Precision = {precision:.4f}, Recall = {recall:.4f}")
+    lines.append(report)
+    lines.append(f"\nTraining Accuracy: \n {history.history['accuracy']}")
+    lines.append(f"\nValidation Accuracy: \n {history.history['val_accuracy']}")
+    lines.append(f"\nTraining loss: \n {history.history['loss']}")
+    lines.append(f"\nValidation loss: \n {history.history['val_loss']}")
+    lines.append(f"\nArray of Model Predictions (Meiboscores):\n {y_pred}")
+
+    Logger().write("\n".join(lines) + "\n")

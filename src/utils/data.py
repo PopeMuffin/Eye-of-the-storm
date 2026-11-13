@@ -142,7 +142,11 @@ def _upsample_dataset(
     return balanced
 
 
-def load_data():
+def load_data() -> tuple[
+    tf.data.Dataset[tuple[tf.Tensor, tf.Tensor]],
+    tf.data.Dataset[tuple[tf.Tensor, tf.Tensor]],
+    tf.data.Dataset[tuple[tf.Tensor, tf.Tensor]],
+]:
     main_df = pd.read_excel(
         "MGD1k/Expore MGD1k Dataset/Graded Meiboscore/6 Round Meiboscore by MGD Experts.xlsx"
     )
@@ -201,14 +205,23 @@ def load_data():
     # Map into format for the model
     BATCH_SIZE = 64
 
-    model_train_dataset = (
+    # .batch() doesn't update the stub's element-type parameter, but it
+    # actually turns each per-element label into a batched Tensor.
+    model_train_dataset = cast(
+        "tf.data.Dataset[tuple[tf.Tensor, tf.Tensor]]",
         train_dataset_cached.shuffle(buffer_size=1000)
         .map(augment_image, num_parallel_calls=tf.data.AUTOTUNE)  # Fresh augmentation
         .batch(BATCH_SIZE)
-        .prefetch(tf.data.AUTOTUNE)
+        .prefetch(tf.data.AUTOTUNE),
     )
 
-    model_val_dataset = val_dataset_cached.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
-    model_test_dataset = test_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE)
+    model_val_dataset = cast(
+        "tf.data.Dataset[tuple[tf.Tensor, tf.Tensor]]",
+        val_dataset_cached.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE),
+    )
+    model_test_dataset = cast(
+        "tf.data.Dataset[tuple[tf.Tensor, tf.Tensor]]",
+        test_dataset.batch(BATCH_SIZE).prefetch(tf.data.AUTOTUNE),
+    )
 
     return model_train_dataset, model_val_dataset, model_test_dataset
