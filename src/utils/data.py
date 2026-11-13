@@ -108,8 +108,8 @@ def _build_file_paths(filenames: np.ndarray) -> tuple[list[str], list[str], list
     corrected: list[str] = [f.replace(".png", ".JPG") for f in filenames]
     return (
         [os.path.join(IMAGE_FOLDER, f) for f in corrected],
-        [os.path.join(EYELID_MASK_FOLDER, f) for f in corrected],
-        [os.path.join(GLAND_MASK_FOLDER, f) for f in corrected],
+        [os.path.join(EYELID_MASK_FOLDER, f) for f in filenames],
+        [os.path.join(GLAND_MASK_FOLDER, f) for f in filenames],
     )
 
 
@@ -194,7 +194,7 @@ def load_data():
     train_dataset_cached = train_dataset.cache()
     val_dataset_cached = val_dataset.cache()
 
-    train_dataset_cached = _upsample_dataset(train_dataset_cached)
+    train_dataset_cached = _upsample_dataset(train_dataset_cached).cache()
 
     # Map into format for the model
     BATCH_SIZE = 64
