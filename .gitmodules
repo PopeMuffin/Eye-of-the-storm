@@ -1,0 +1,3 @@
+[submodule "MGD1k"]
+	path = MGD1k
+	url = git@github.com:opyuu/MGD1k.git
