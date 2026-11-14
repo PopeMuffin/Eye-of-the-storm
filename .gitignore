@@ -1,0 +1,5 @@
+.venv
+.ipynb_*
+__pycache__/
+out
+Details.txt
