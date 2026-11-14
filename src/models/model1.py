@@ -10,10 +10,9 @@ class Model1(MeiboModel):
     def __init__(self) -> None:
         model = tf.keras.models.Sequential(
             [
+                tf.keras.layers.Input(shape=input_shape),
                 # First Convolutional Block
-                tf.keras.layers.Conv2D(
-                    32, (3, 3), activation="relu", input_shape=input_shape
-                ),
+                tf.keras.layers.Conv2D(32, (3, 3), activation="relu"),
                 tf.keras.layers.MaxPooling2D((2, 2)),
                 # Second Convolutional Block
                 tf.keras.layers.Conv2D(64, (3, 3), activation="relu"),

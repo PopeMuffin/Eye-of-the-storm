@@ -3,9 +3,14 @@ from typing import cast
 
 import matplotlib.pyplot as plt
 import numpy as np
-import tensorflow as tf
-from sklearn.metrics import classification_report, confusion_matrix, precision_score, recall_score
 import seaborn as sns
+import tensorflow as tf
+from sklearn.metrics import (
+    classification_report,
+    confusion_matrix,
+    precision_score,
+    recall_score,
+)
 
 from src.utils.logger import Logger
 

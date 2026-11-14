@@ -10,6 +10,14 @@ from src.utils.logger import Logger
 LEARN_RATE = 0.00005
 
 
+def freeze_batch_norm_layers(base_model: tf.keras.Model[tf.Tensor, tf.Tensor]) -> None:
+    # Keep BatchNormalization frozen to prevent mean/variance collapse
+    # unless you have a very large batch size (>32)
+    for layer in base_model.layers:
+        if isinstance(layer, tf.keras.layers.BatchNormalization):
+            layer.trainable = False
+
+
 ### Training reducing learing rate on  plateau
 reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
     monitor="val_loss",
