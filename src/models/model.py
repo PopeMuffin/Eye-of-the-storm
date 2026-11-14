@@ -46,7 +46,7 @@ class MeiboModel:
         return self.model.fit(
             x=training_data,
             validation_data=validation_data,
-            epochs=5,
+            epochs=100,
             callbacks=[
                 self.early_stop,
                 Logger().csv_logger,
